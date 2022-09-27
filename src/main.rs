@@ -8,5 +8,19 @@ use uuid::Uuid;
 
 #[tokio::main]
 async fn main() -> Result<(), LambdaError> {
+    let func  = handler_fn(handler);
+    lambda_runtime::run(func).await?;
+    Ok(())
+}
 
+#[derive(Deserialize)]
+struct CustomEvent {
+    question: String,
+    answer: String
+}
+
+async fn handler(event: CustomEvent, _: Context) -> Result<Value, LambdaError> {
+    Uuid::new_v4().to_string();
+
+    let region_provider = RegionProviderChain::default_provider().or_else("eu-central-1");
 }
