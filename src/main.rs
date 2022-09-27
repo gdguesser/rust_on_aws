@@ -23,4 +23,16 @@ async fn handler(event: CustomEvent, _: Context) -> Result<Value, LambdaError> {
     Uuid::new_v4().to_string();
 
     let region_provider = RegionProviderChain::default_provider().or_else("eu-central-1");
+    let config = aws_config::from_env().region(region_provider).load().await?;
+    let client = Client::new(&config);
+
+    let request = client.put_item()
+        .table_name("questions")
+        .item("uid", AttributeValue::S(String::from(uuid)))
+        .item("question", AttributeValue::S(String::from(event.question)))
+        .item("answer", AttributeValue::S(String::from(event.answer)));
+
+    request.send().await?;
+
+    Ok(json!({"message": "Record written"}))
 }
